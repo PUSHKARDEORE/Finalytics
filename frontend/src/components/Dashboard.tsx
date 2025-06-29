@@ -19,7 +19,10 @@ import {
   StatHelpText,
   StatArrow,
   SimpleGrid,
-  Container
+  Container,
+  Badge,
+  Avatar,
+  Divider
 } from '@chakra-ui/react';
 import Charts from './Charts';
 import TransactionTable from './TransactionTable';
@@ -63,6 +66,106 @@ interface DashboardStats {
   }>;
 }
 
+// Recent Activity Component
+const RecentActivity: React.FC<{ transactions: Transaction[] }> = ({ transactions }) => {
+  const textColor = useColorModeValue('gray.800', 'white');
+  const gray400 = useColorModeValue('gray.600', 'gray.400');
+  const green600 = useColorModeValue('green.600', 'green.300');
+  const red600 = useColorModeValue('red.600', 'red.300');
+  const blue600 = useColorModeValue('blue.600', 'blue.300');
+  const yellow600 = useColorModeValue('yellow.600', 'yellow.300');
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) {
+      return 'Just now';
+    } else if (diffInHours < 24) {
+      return `${diffInHours}h ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
+
+  const formatAmount = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(amount);
+  };
+
+  const getStatusColor = (status: string) => {
+    return status === 'Paid' ? green600 : yellow600;
+  };
+
+  const getCategoryColor = (category: string) => {
+    return category === 'Revenue' ? green600 : red600;
+  };
+
+  // Get the 5 most recent transactions
+  const recentTransactions = transactions.slice(0, 5);
+
+  if (recentTransactions.length === 0) {
+    return (
+      <VStack spacing={3} align="stretch">
+        <Text color={gray400} fontSize="sm" textAlign="center">
+          No recent transactions
+        </Text>
+      </VStack>
+    );
+  }
+
+  return (
+    <VStack spacing={3} align="stretch" maxH="300px" overflowY="auto">
+      {recentTransactions.map((transaction, index) => (
+        <Box key={transaction.id}>
+          <Flex align="center" justify="space-between">
+            <Flex align="center" flex={1}>
+              <Avatar 
+                size="sm" 
+                name={`Transaction ${transaction.id}`}
+                bg={getCategoryColor(transaction.category)}
+                color="white"
+                mr={3}
+              />
+              <Box flex={1}>
+                <Text fontSize="sm" fontWeight="medium" color={textColor}>
+                  Transaction #{transaction.id}
+                </Text>
+                <Text fontSize="xs" color={gray400}>
+                  {formatAmount(transaction.amount)} • {transaction.user_id}
+                </Text>
+              </Box>
+            </Flex>
+            <VStack align="end" spacing={1}>
+              <Badge 
+                size="sm" 
+                colorScheme={transaction.category === 'Revenue' ? 'green' : 'red'}
+                variant="subtle"
+              >
+                {transaction.category}
+              </Badge>
+              <Badge 
+                size="sm" 
+                colorScheme={transaction.status === 'Paid' ? 'green' : 'yellow'}
+                variant="subtle"
+              >
+                {transaction.status}
+              </Badge>
+              <Text fontSize="xs" color={gray400}>
+                {formatDate(transaction.date)}
+              </Text>
+            </VStack>
+          </Flex>
+          {index < recentTransactions.length - 1 && <Divider mt={3} />}
+        </Box>
+      ))}
+    </VStack>
+  );
+};
+
 const Dashboard: React.FC = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -75,6 +178,7 @@ const Dashboard: React.FC = () => {
     totalItems: 0,
     itemsPerPage: 10
   });
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const toast = useToast();
 
   // Move all useColorModeValue hooks to the top
@@ -153,11 +257,30 @@ const Dashboard: React.FC = () => {
     const loadDashboard = async () => {
       setIsLoading(true);
       await Promise.all([fetchTransactions(), fetchStats()]);
+      setLastUpdated(new Date());
       setIsLoading(false);
     };
 
     loadDashboard();
   }, []);
+
+  // Auto-refresh dashboard data every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        await Promise.all([
+          fetchTransactions(pagination.currentPage, currentFilters),
+          fetchStats(currentFilters)
+        ]);
+        setLastUpdated(new Date());
+      } catch (error) {
+        console.error('Auto-refresh failed:', error);
+        // Don't show toast for auto-refresh failures to avoid spam
+      }
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [pagination.currentPage, currentFilters]);
 
   if (isLoading) {
     return (
@@ -175,16 +298,54 @@ const Dashboard: React.FC = () => {
       {/* Header Section */}
       <Box mb={6}>
         <Flex justify="space-between" align="center" mb={4}>
-          <Heading as="h1" size="xl" color={textColor}>
-            Financial Dashboard
-          </Heading>
-          <Button
-            colorScheme="teal"
-            onClick={() => setIsCSVExportOpen(true)}
-            size="md"
-          >
-            Export CSV
-          </Button>
+          <VStack align="start" spacing={1}>
+            <Heading as="h1" size="xl" color={textColor}>
+              Financial Dashboard
+            </Heading>
+            <Text fontSize="sm" color={gray400}>
+              Last updated: {lastUpdated.toLocaleTimeString()}
+            </Text>
+          </VStack>
+          <HStack spacing={3}>
+            <Button
+              colorScheme="blue"
+              variant="outline"
+              size="md"
+              onClick={async () => {
+                try {
+                  await Promise.all([
+                    fetchTransactions(pagination.currentPage, currentFilters),
+                    fetchStats(currentFilters)
+                  ]);
+                  setLastUpdated(new Date());
+                  toast({
+                    title: 'Dashboard refreshed',
+                    description: 'Data has been updated successfully',
+                    status: 'success',
+                    duration: 2000,
+                    isClosable: true,
+                  });
+                } catch (error) {
+                  toast({
+                    title: 'Refresh failed',
+                    description: 'Failed to update dashboard data',
+                    status: 'error',
+                    duration: 3000,
+                    isClosable: true,
+                  });
+                }
+              }}
+            >
+              Refresh
+            </Button>
+            <Button
+              colorScheme="teal"
+              onClick={() => setIsCSVExportOpen(true)}
+              size="md"
+            >
+              Export CSV
+            </Button>
+          </HStack>
         </Flex>
       </Box>
 
@@ -345,7 +506,7 @@ const Dashboard: React.FC = () => {
               )}
             </Box>
 
-            {/* Recent Activity or Additional Widgets can go here */}
+            {/* Recent Activity */}
             <Box 
               bg={cardBgColor} 
               borderRadius="xl" 
@@ -357,9 +518,7 @@ const Dashboard: React.FC = () => {
               flex={1}
             >
               <Heading as="h3" size="md" mb={4} color={textColor}>Recent Activity</Heading>
-              <Text color={gray400} fontSize="sm">
-                Dashboard activity and notifications will appear here.
-              </Text>
+              <RecentActivity transactions={transactions} />
             </Box>
           </VStack>
         </GridItem>

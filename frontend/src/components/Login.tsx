@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Box, Button, Input, Container, VStack, Heading, FormControl, FormLabel, Text, useToast, useColorModeValue } from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react';
+import { Box, Button, Input, Container, VStack, Heading, FormControl, FormLabel, Text, useToast, useColorModeValue, Alert, AlertIcon } from '@chakra-ui/react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, serverError, clearServerError } = useAuth();
   const toast = useToast();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -14,6 +14,19 @@ const Login: React.FC = () => {
   // Color mode values for dark mode support
   const textColor = useColorModeValue('gray.600', 'gray.300');
   const demoTextColor = useColorModeValue('gray.500', 'gray.400');
+
+  // Clear server error when component mounts or when user starts typing
+  useEffect(() => {
+    if (serverError) {
+      clearServerError();
+    }
+  }, [serverError, clearServerError]);
+
+  const handleInputChange = () => {
+    if (serverError) {
+      clearServerError();
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -58,7 +71,10 @@ const Login: React.FC = () => {
             <Input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                handleInputChange();
+              }}
               placeholder="Enter your email"
               isDisabled={isLoading}
             />
@@ -68,7 +84,10 @@ const Login: React.FC = () => {
             <Input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                handleInputChange();
+              }}
               placeholder="Enter your password"
               isDisabled={isLoading}
             />
@@ -94,6 +113,12 @@ const Login: React.FC = () => {
             Register
           </span>
         </Text>
+        {serverError && (
+          <Alert status="error" mt={4}>
+            <AlertIcon />
+            {serverError}
+          </Alert>
+        )}
       </VStack>
     </Container>
   );

@@ -42,13 +42,18 @@ router.get('/', auth, async (req: Request, res: Response) => {
       if (maxAmount) filter.amount.$lte = parseFloat(maxAmount as string);
     }
 
-    // Build search query with enhanced substring matching
+    // Build search query with proper substring matching
     if (search) {
       const searchTerm = search.toString().trim();
       if (searchTerm) {
-        filter.$or = [
-          // Search in transaction ID (convert to string for partial matching)
-          { id: { $regex: searchTerm, $options: 'i' } },
+        // Check if search term is numeric (for amount, ID, or date components)
+        const isNumeric = /^\d+$/.test(searchTerm);
+        
+        const searchConditions: any[] = [
+          // Search in transaction ID (exact match for numeric search, partial for text)
+          isNumeric 
+            ? { id: parseInt(searchTerm) }
+            : { id: { $regex: searchTerm, $options: 'i' } },
           // Search in user_id
           { user_id: { $regex: searchTerm, $options: 'i' } },
           // Search in category
@@ -56,33 +61,54 @@ router.get('/', auth, async (req: Request, res: Response) => {
           // Search in status
           { status: { $regex: searchTerm, $options: 'i' } },
           // Search in user_profile
-          { user_profile: { $regex: searchTerm, $options: 'i' } },
-          // Search in amount (convert to string for partial matching)
-          { 
-            $expr: { 
-              $regexMatch: { 
-                input: { $toString: '$amount' }, 
-                regex: searchTerm, 
-                options: 'i' 
-              } 
-            } 
-          },
-          // Search in date (formatted as string)
-          { 
-            $expr: { 
-              $regexMatch: { 
-                input: { 
-                  $dateToString: { 
-                    format: '%Y-%m-%d', 
-                    date: '$date' 
-                  } 
-                }, 
-                regex: searchTerm, 
-                options: 'i' 
-              } 
-            } 
-          }
+          { user_profile: { $regex: searchTerm, $options: 'i' } }
         ];
+
+        // For numeric searches, also search in amount and date components
+        if (isNumeric) {
+          // Search in amount (convert to string for partial matching)
+          searchConditions.push({
+            $expr: {
+              $regexMatch: {
+                input: { $toString: '$amount' },
+                regex: searchTerm,
+                options: 'i'
+              }
+            }
+          });
+
+          // Search in year, month, day separately to avoid false positives
+          const searchNum = parseInt(searchTerm);
+          
+          // Only search in year if it's a 4-digit number
+          if (searchNum >= 1000 && searchNum <= 9999) {
+            searchConditions.push({
+              $expr: {
+                $eq: [{ $year: '$date' }, searchNum]
+              }
+            });
+          }
+          
+          // Only search in month if it's 1-12
+          if (searchNum >= 1 && searchNum <= 12) {
+            searchConditions.push({
+              $expr: {
+                $eq: [{ $month: '$date' }, searchNum]
+              }
+            });
+          }
+          
+          // Only search in day if it's 1-31
+          if (searchNum >= 1 && searchNum <= 31) {
+            searchConditions.push({
+              $expr: {
+                $eq: [{ $dayOfMonth: '$date' }, searchNum]
+              }
+            });
+          }
+        }
+
+        filter.$or = searchConditions;
       }
     }
 
@@ -146,13 +172,18 @@ router.get('/stats', auth, async (req: Request, res: Response) => {
       filter.user_id = user_id;
     }
 
-    // Search filter with enhanced substring matching
+    // Search filter with proper substring matching
     if (search) {
       const searchTerm = search.toString().trim();
       if (searchTerm) {
-        filter.$or = [
-          // Search in transaction ID (convert to string for partial matching)
-          { id: { $regex: searchTerm, $options: 'i' } },
+        // Check if search term is numeric (for amount, ID, or date components)
+        const isNumeric = /^\d+$/.test(searchTerm);
+        
+        const searchConditions: any[] = [
+          // Search in transaction ID (exact match for numeric search, partial for text)
+          isNumeric 
+            ? { id: parseInt(searchTerm) }
+            : { id: { $regex: searchTerm, $options: 'i' } },
           // Search in user_id
           { user_id: { $regex: searchTerm, $options: 'i' } },
           // Search in category
@@ -160,33 +191,54 @@ router.get('/stats', auth, async (req: Request, res: Response) => {
           // Search in status
           { status: { $regex: searchTerm, $options: 'i' } },
           // Search in user_profile
-          { user_profile: { $regex: searchTerm, $options: 'i' } },
-          // Search in amount (convert to string for partial matching)
-          { 
-            $expr: { 
-              $regexMatch: { 
-                input: { $toString: '$amount' }, 
-                regex: searchTerm, 
-                options: 'i' 
-              } 
-            } 
-          },
-          // Search in date (formatted as string)
-          { 
-            $expr: { 
-              $regexMatch: { 
-                input: { 
-                  $dateToString: { 
-                    format: '%Y-%m-%d', 
-                    date: '$date' 
-                  } 
-                }, 
-                regex: searchTerm, 
-                options: 'i' 
-              } 
-            } 
-          }
+          { user_profile: { $regex: searchTerm, $options: 'i' } }
         ];
+
+        // For numeric searches, also search in amount and date components
+        if (isNumeric) {
+          // Search in amount (convert to string for partial matching)
+          searchConditions.push({
+            $expr: {
+              $regexMatch: {
+                input: { $toString: '$amount' },
+                regex: searchTerm,
+                options: 'i'
+              }
+            }
+          });
+
+          // Search in year, month, day separately to avoid false positives
+          const searchNum = parseInt(searchTerm);
+          
+          // Only search in year if it's a 4-digit number
+          if (searchNum >= 1000 && searchNum <= 9999) {
+            searchConditions.push({
+              $expr: {
+                $eq: [{ $year: '$date' }, searchNum]
+              }
+            });
+          }
+          
+          // Only search in month if it's 1-12
+          if (searchNum >= 1 && searchNum <= 12) {
+            searchConditions.push({
+              $expr: {
+                $eq: [{ $month: '$date' }, searchNum]
+              }
+            });
+          }
+          
+          // Only search in day if it's 1-31
+          if (searchNum >= 1 && searchNum <= 31) {
+            searchConditions.push({
+              $expr: {
+                $eq: [{ $dayOfMonth: '$date' }, searchNum]
+              }
+            });
+          }
+        }
+
+        filter.$or = searchConditions;
       }
     }
 
@@ -280,9 +332,14 @@ router.post('/export', auth, async (req: Request, res: Response) => {
     if (filters.search) {
       const searchTerm = filters.search.toString().trim();
       if (searchTerm) {
-        filter.$or = [
-          // Search in transaction ID (convert to string for partial matching)
-          { id: { $regex: searchTerm, $options: 'i' } },
+        // Check if search term is numeric (for amount, ID, or date components)
+        const isNumeric = /^\d+$/.test(searchTerm);
+        
+        const searchConditions: any[] = [
+          // Search in transaction ID (exact match for numeric search, partial for text)
+          isNumeric 
+            ? { id: parseInt(searchTerm) }
+            : { id: { $regex: searchTerm, $options: 'i' } },
           // Search in user_id
           { user_id: { $regex: searchTerm, $options: 'i' } },
           // Search in category
@@ -290,33 +347,54 @@ router.post('/export', auth, async (req: Request, res: Response) => {
           // Search in status
           { status: { $regex: searchTerm, $options: 'i' } },
           // Search in user_profile
-          { user_profile: { $regex: searchTerm, $options: 'i' } },
-          // Search in amount (convert to string for partial matching)
-          { 
-            $expr: { 
-              $regexMatch: { 
-                input: { $toString: '$amount' }, 
-                regex: searchTerm, 
-                options: 'i' 
-              } 
-            } 
-          },
-          // Search in date (formatted as string)
-          { 
-            $expr: { 
-              $regexMatch: { 
-                input: { 
-                  $dateToString: { 
-                    format: '%Y-%m-%d', 
-                    date: '$date' 
-                  } 
-                }, 
-                regex: searchTerm, 
-                options: 'i' 
-              } 
-            } 
-          }
+          { user_profile: { $regex: searchTerm, $options: 'i' } }
         ];
+
+        // For numeric searches, also search in amount and date components
+        if (isNumeric) {
+          // Search in amount (convert to string for partial matching)
+          searchConditions.push({
+            $expr: {
+              $regexMatch: {
+                input: { $toString: '$amount' },
+                regex: searchTerm,
+                options: 'i'
+              }
+            }
+          });
+
+          // Search in year, month, day separately to avoid false positives
+          const searchNum = parseInt(searchTerm);
+          
+          // Only search in year if it's a 4-digit number
+          if (searchNum >= 1000 && searchNum <= 9999) {
+            searchConditions.push({
+              $expr: {
+                $eq: [{ $year: '$date' }, searchNum]
+              }
+            });
+          }
+          
+          // Only search in month if it's 1-12
+          if (searchNum >= 1 && searchNum <= 12) {
+            searchConditions.push({
+              $expr: {
+                $eq: [{ $month: '$date' }, searchNum]
+              }
+            });
+          }
+          
+          // Only search in day if it's 1-31
+          if (searchNum >= 1 && searchNum <= 31) {
+            searchConditions.push({
+              $expr: {
+                $eq: [{ $dayOfMonth: '$date' }, searchNum]
+              }
+            });
+          }
+        }
+
+        filter.$or = searchConditions;
       }
     }
 

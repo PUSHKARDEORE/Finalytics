@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Table, 
   Thead, 
@@ -66,6 +66,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [activeFilters, setActiveFilters] = useState<any>({});
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const toast = useToast();
 
   // Move all useColorModeValue hooks to the top
@@ -97,25 +98,43 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   const handleFilterChange = (key: string, value: string) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
+    
+    // For search input, use debounce to avoid too many API calls
+    if (key === 'search') {
+      // Clear existing timeout
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+      
+      // Set new timeout for search
+      const timeout = setTimeout(() => {
+        applyFiltersImmediately(newFilters);
+      }, 500); // 500ms delay
+      
+      setSearchTimeout(timeout);
+    } else {
+      // For dropdown selections, apply immediately
+      applyFiltersImmediately(newFilters);
+    }
   };
 
-  const applyFilters = () => {
+  const applyFiltersImmediately = (filterValues: any) => {
     setIsLoading(true);
     try {
       // Convert filters to API format
       const apiFilters: any = {};
       
-      if (filters.search) {
-        apiFilters.search = filters.search;
+      if (filterValues.search) {
+        apiFilters.search = filterValues.search;
       }
-      if (filters.category) {
-        apiFilters.category = filters.category;
+      if (filterValues.category) {
+        apiFilters.category = filterValues.category;
       }
-      if (filters.status) {
-        apiFilters.status = filters.status;
+      if (filterValues.status) {
+        apiFilters.status = filterValues.status;
       }
-      if (filters.user_id) {
-        apiFilters.user_id = filters.user_id;
+      if (filterValues.user_id) {
+        apiFilters.user_id = filterValues.user_id;
       }
 
       // Update active filters for display
@@ -144,7 +163,17 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
     }
   };
 
+  const applyFilters = () => {
+    applyFiltersImmediately(filters);
+  };
+
   const clearFilters = () => {
+    // Clear search timeout if it exists
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+      setSearchTimeout(null);
+    }
+    
     const emptyFilters = {
       search: '',
       category: '',
@@ -176,6 +205,15 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
   };
 
   const hasActiveFilters = Object.keys(activeFilters).length > 0;
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+    };
+  }, [searchTimeout]);
 
   return (
     <Box borderWidth="1px" borderRadius="lg" overflow="hidden" p={4} bg={bgColor} borderColor={borderColor}>
@@ -257,15 +295,6 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
             </Select>
           </HStack>
           <HStack spacing={2}>
-            <Button 
-              size="sm" 
-              colorScheme="teal" 
-              onClick={applyFilters}
-              isLoading={isLoading}
-              loadingText="Applying..."
-            >
-              Apply Filters
-            </Button>
             <Button size="sm" variant="outline" onClick={clearFilters}>
               Clear All
             </Button>

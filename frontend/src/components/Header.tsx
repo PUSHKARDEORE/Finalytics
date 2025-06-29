@@ -28,7 +28,7 @@ const Header: React.FC = () => {
       <Flex alignItems="center">
         <Box as="span" cursor="pointer" onClick={() => navigate('/dashboard')}>
           <Image
-            src={process.env.PUBLIC_URL + '/Finalytics_Logo.jpg'}
+            src={process.env.PUBLIC_URL + '/Finalytics_Logo.png'}
             alt="Finalytics Logo"
             boxSize="40px"
             objectFit="contain"

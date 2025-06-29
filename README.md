@@ -30,7 +30,7 @@ A full-stack financial analytics application built with React, Node.js, Express,
 
 ### 1. Clone the Repository
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/PUSHKARDEORE/Finalytics.git
 cd Finalytics
 ```
 
@@ -128,17 +128,6 @@ interface IUser {
 }
 ```
 
-## 🚀 Deployment
-
-### Backend Deployment (Heroku/Railway/Render)
-1. Set environment variables in your deployment platform
-2. Configure MongoDB connection string
-3. Deploy using the provided scripts
-
-### Frontend Deployment (Vercel/Netlify)
-1. Build the project: `npm run build`
-2. Deploy the build folder to your preferred platform
-
 ## 📁 Project Structure
 
 ```
@@ -160,17 +149,13 @@ Finalytics/
 └── README.md
 ```
 
-## 🧪 Testing
-
-The application includes comprehensive error handling and validation. All API endpoints are tested and documented in the Postman collection.
-
 ## 📝 License
 
 This project is created for educational purposes as part of a full-stack development assignment.
 
 ## 👨‍💻 Author
 
-[Your Name] - Full Stack Developer
+Pushkar Deore - Full Stack Developer
 
 ---
 

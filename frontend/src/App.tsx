@@ -29,9 +29,9 @@ const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
 
   return (
-    <Router>
-      <Header />
-      <Routes>
+        <Router>
+        <Header />
+        <Routes>
         <Route 
           path="/" 
           element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} 
@@ -56,8 +56,8 @@ const AppContent: React.FC = () => {
             </ProtectedRoute>
           } 
         />
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
   );
 };
 

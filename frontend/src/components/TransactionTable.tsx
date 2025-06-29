@@ -254,7 +254,7 @@ const TransactionTable: React.FC<TransactionTableProps> = ({
         <VStack spacing={3} align="stretch">
           <HStack spacing={4}>
             <Input
-              placeholder="Search transactions..."
+              placeholder="Search by ID, amount, date, category, status, or user..."
               value={filters.search}
               onChange={(e) => handleFilterChange('search', e.target.value)}
               size="sm"

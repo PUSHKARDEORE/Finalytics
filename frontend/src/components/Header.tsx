@@ -46,7 +46,7 @@ const Header: React.FC = () => {
               />
               <Button colorScheme="teal" variant="ghost" onClick={handleLogout}>
                 Logout
-              </Button>
+          </Button>
             </Flex>
           ) : (
             <Flex alignItems="center" gap={2}>

@@ -231,7 +231,3 @@ src/
 3. Set a strong JWT secret
 4. Configure CORS for your frontend domain
 5. Use a process manager like PM2 for production
-
-## License
-
-MIT License 

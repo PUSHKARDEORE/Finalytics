@@ -28,5 +28,14 @@ TransactionSchema.index({ category: 1 });
 TransactionSchema.index({ status: 1 });
 TransactionSchema.index({ user_id: 1 });
 TransactionSchema.index({ amount: 1 });
+TransactionSchema.index({ user_profile: 1 });
+
+// Text index for better search performance
+TransactionSchema.index({ 
+  user_id: 'text', 
+  category: 'text', 
+  status: 'text', 
+  user_profile: 'text' 
+});
 
 export default mongoose.model<ITransaction>('Transaction', TransactionSchema); 

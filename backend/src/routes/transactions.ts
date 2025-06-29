@@ -42,13 +42,48 @@ router.get('/', auth, async (req: Request, res: Response) => {
       if (maxAmount) filter.amount.$lte = parseFloat(maxAmount as string);
     }
 
-    // Build search query
+    // Build search query with enhanced substring matching
     if (search) {
-      filter.$or = [
-        { user_id: { $regex: search, $options: 'i' } },
-        { category: { $regex: search, $options: 'i' } },
-        { status: { $regex: search, $options: 'i' } }
-      ];
+      const searchTerm = search.toString().trim();
+      if (searchTerm) {
+        filter.$or = [
+          // Search in transaction ID (convert to string for partial matching)
+          { id: { $regex: searchTerm, $options: 'i' } },
+          // Search in user_id
+          { user_id: { $regex: searchTerm, $options: 'i' } },
+          // Search in category
+          { category: { $regex: searchTerm, $options: 'i' } },
+          // Search in status
+          { status: { $regex: searchTerm, $options: 'i' } },
+          // Search in user_profile
+          { user_profile: { $regex: searchTerm, $options: 'i' } },
+          // Search in amount (convert to string for partial matching)
+          { 
+            $expr: { 
+              $regexMatch: { 
+                input: { $toString: '$amount' }, 
+                regex: searchTerm, 
+                options: 'i' 
+              } 
+            } 
+          },
+          // Search in date (formatted as string)
+          { 
+            $expr: { 
+              $regexMatch: { 
+                input: { 
+                  $dateToString: { 
+                    format: '%Y-%m-%d', 
+                    date: '$date' 
+                  } 
+                }, 
+                regex: searchTerm, 
+                options: 'i' 
+              } 
+            } 
+          }
+        ];
+      }
     }
 
     // Build sort object
@@ -111,13 +146,48 @@ router.get('/stats', auth, async (req: Request, res: Response) => {
       filter.user_id = user_id;
     }
 
-    // Search filter
+    // Search filter with enhanced substring matching
     if (search) {
-      filter.$or = [
-        { user_id: { $regex: search, $options: 'i' } },
-        { category: { $regex: search, $options: 'i' } },
-        { status: { $regex: search, $options: 'i' } }
-      ];
+      const searchTerm = search.toString().trim();
+      if (searchTerm) {
+        filter.$or = [
+          // Search in transaction ID (convert to string for partial matching)
+          { id: { $regex: searchTerm, $options: 'i' } },
+          // Search in user_id
+          { user_id: { $regex: searchTerm, $options: 'i' } },
+          // Search in category
+          { category: { $regex: searchTerm, $options: 'i' } },
+          // Search in status
+          { status: { $regex: searchTerm, $options: 'i' } },
+          // Search in user_profile
+          { user_profile: { $regex: searchTerm, $options: 'i' } },
+          // Search in amount (convert to string for partial matching)
+          { 
+            $expr: { 
+              $regexMatch: { 
+                input: { $toString: '$amount' }, 
+                regex: searchTerm, 
+                options: 'i' 
+              } 
+            } 
+          },
+          // Search in date (formatted as string)
+          { 
+            $expr: { 
+              $regexMatch: { 
+                input: { 
+                  $dateToString: { 
+                    format: '%Y-%m-%d', 
+                    date: '$date' 
+                  } 
+                }, 
+                regex: searchTerm, 
+                options: 'i' 
+              } 
+            } 
+          }
+        ];
+      }
     }
 
     // Get total revenue and expenses
@@ -208,11 +278,46 @@ router.post('/export', auth, async (req: Request, res: Response) => {
     }
 
     if (filters.search) {
-      filter.$or = [
-        { user_id: { $regex: filters.search, $options: 'i' } },
-        { category: { $regex: filters.search, $options: 'i' } },
-        { status: { $regex: filters.search, $options: 'i' } }
-      ];
+      const searchTerm = filters.search.toString().trim();
+      if (searchTerm) {
+        filter.$or = [
+          // Search in transaction ID (convert to string for partial matching)
+          { id: { $regex: searchTerm, $options: 'i' } },
+          // Search in user_id
+          { user_id: { $regex: searchTerm, $options: 'i' } },
+          // Search in category
+          { category: { $regex: searchTerm, $options: 'i' } },
+          // Search in status
+          { status: { $regex: searchTerm, $options: 'i' } },
+          // Search in user_profile
+          { user_profile: { $regex: searchTerm, $options: 'i' } },
+          // Search in amount (convert to string for partial matching)
+          { 
+            $expr: { 
+              $regexMatch: { 
+                input: { $toString: '$amount' }, 
+                regex: searchTerm, 
+                options: 'i' 
+              } 
+            } 
+          },
+          // Search in date (formatted as string)
+          { 
+            $expr: { 
+              $regexMatch: { 
+                input: { 
+                  $dateToString: { 
+                    format: '%Y-%m-%d', 
+                    date: '$date' 
+                  } 
+                }, 
+                regex: searchTerm, 
+                options: 'i' 
+              } 
+            } 
+          }
+        ];
+      }
     }
 
     // Fetch transactions

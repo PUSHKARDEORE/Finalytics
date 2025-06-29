@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Flex, Spacer, Button, Heading, Text, useToast, IconButton, useColorMode } from '@chakra-ui/react';
+import { Box, Flex, Spacer, Button, Heading, Text, useToast, IconButton, useColorMode, Image } from '@chakra-ui/react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { SunIcon, MoonIcon } from '@chakra-ui/icons';
@@ -26,6 +26,15 @@ const Header: React.FC = () => {
   return (
     <Box bg="teal.500" px={4} py={3}>
       <Flex alignItems="center">
+        <Box as="span" cursor="pointer" onClick={() => navigate('/dashboard')}>
+          <Image
+            src={process.env.PUBLIC_URL + '/Finalytics_Logo.jpg'}
+            alt="Finalytics Logo"
+            boxSize="40px"
+            objectFit="contain"
+            mr={3}
+          />
+        </Box>
         <Heading as="h1" size="md" color="white" cursor="pointer" onClick={() => navigate('/dashboard')}>
           Finalytics
         </Heading>
@@ -46,7 +55,7 @@ const Header: React.FC = () => {
               />
               <Button colorScheme="teal" variant="ghost" onClick={handleLogout}>
                 Logout
-          </Button>
+              </Button>
             </Flex>
           ) : (
             <Flex alignItems="center" gap={2}>

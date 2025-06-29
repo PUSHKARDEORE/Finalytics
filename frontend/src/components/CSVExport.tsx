@@ -143,12 +143,6 @@ const CSVExport: React.FC<CSVExportProps> = ({ isOpen, onClose, filters = {} }) 
             ))}
           </VStack>
 
-          <Box mt={4} p={3} bg="blue.50" borderRadius="md">
-            <Text fontSize="sm" color={useColorModeValue('gray.600', 'gray.300')}>
-              <strong>Note:</strong> The export will include {selectedColumns.length} column(s) 
-              and will respect any active filters.
-            </Text>
-          </Box>
         </ModalBody>
 
         <ModalFooter>

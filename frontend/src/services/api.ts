@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 // Create axios instance with base configuration
 const api = axios.create({
@@ -45,17 +45,17 @@ api.interceptors.response.use(
 // Authentication API
 export const authAPI = {
   login: async (email: string, password: string) => {
-    const response = await api.post('/auth/login', { email, password });
+    const response = await api.post('/api/auth/login', { email, password });
     return response.data;
   },
 
   register: async (email: string, password: string) => {
-    const response = await api.post('/auth/register', { email, password });
+    const response = await api.post('/api/auth/register', { email, password });
     return response.data;
   },
 
   verifyToken: async () => {
-    const response = await api.get('/auth/protected');
+    const response = await api.get('/api/auth/protected');
     return response.data;
   },
 };
@@ -76,7 +76,7 @@ export const transactionAPI = {
     minAmount?: number;
     maxAmount?: number;
   }) => {
-    const response = await api.get('/transactions', { params });
+    const response = await api.get('/api/transactions', { params });
     return response.data;
   },
 
@@ -88,17 +88,17 @@ export const transactionAPI = {
     user_id?: string;
     search?: string;
   }) => {
-    const response = await api.get('/transactions/stats', { params });
+    const response = await api.get('/api/transactions/stats', { params });
     return response.data;
   },
 
   getFilters: async () => {
-    const response = await api.get('/transactions/filters');
+    const response = await api.get('/api/transactions/filters');
     return response.data;
   },
 
   exportCSV: async (columns: string[], filters: any) => {
-    const response = await api.post('/transactions/export', { columns, filters }, {
+    const response = await api.post('/api/transactions/export', { columns, filters }, {
       responseType: 'blob',
     });
     return response.data;
@@ -108,7 +108,7 @@ export const transactionAPI = {
 // Health check API
 export const healthAPI = {
   check: async () => {
-    const response = await api.get('/health');
+    const response = await api.get('/api/health');
     return response.data;
   },
 };

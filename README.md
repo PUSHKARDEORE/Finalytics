@@ -61,12 +61,7 @@ npm install
 
 Create a `.env` file in the frontend directory:
 ```env
-# API Base URL
-# For local development:
 REACT_APP_API_URL=http://localhost:5000
-
-# For production (after deploying backend):
-# REACT_APP_API_URL=https://your-backend-url.railway.app
 ```
 
 Start the frontend application:

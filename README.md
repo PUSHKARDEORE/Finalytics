@@ -57,12 +57,44 @@ npm start
 ```bash
 cd frontend
 npm install
+```
+
+Create a `.env` file in the frontend directory:
+```env
+# API Base URL
+# For local development:
+REACT_APP_API_URL=http://localhost:5000
+
+# For production (after deploying backend):
+# REACT_APP_API_URL=https://your-backend-url.railway.app
+```
+
+Start the frontend application:
+```bash
 npm start
 ```
 
 The application will be available at:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:5000
+
+## 🔧 Environment Configuration
+
+### Backend Environment Variables
+| Variable | Purpose | Example |
+|----------|---------|---------|
+| `PORT` | Server port number | `5000` |
+| `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017/finalytics` |
+| `JWT_SECRET` | Secret key for JWT tokens | `your-super-secret-key` |
+
+### Frontend Environment Variables
+| Variable | Purpose | Example |
+|----------|---------|---------|
+| `REACT_APP_API_URL` | Backend API base URL | `http://localhost:5000` |
+
+**Important**: 
+- Never commit `.env` files to version control
+- React environment variables must start with `REACT_APP_`
 
 ## 📚 API Documentation
 
@@ -132,12 +164,13 @@ interface IUser {
 
 ```
 Finalytics/
-├── backend/                 # Node.js/Express backend
+├── backend/                # Node.js/Express backend
 │   ├── src/
 │   │   ├── models/         # MongoDB models
 │   │   ├── routes/         # API routes
 │   │   ├── middleware/     # Authentication middleware
 │   │   └── index.ts        # Server entry point
+│   ├── .env                # Environment variables
 │   └── package.json
 ├── frontend/               # React frontend
 │   ├── src/
@@ -145,9 +178,22 @@ Finalytics/
 │   │   ├── services/       # API services
 │   │   ├── context/        # React context
 │   │   └── App.tsx         # Main app component
+│   ├── .env                # Environment variables
 │   └── package.json
 └── README.md
 ```
+
+## 🚀 Deployment
+
+### Backend Deployment (Railway/Heroku/Render)
+1. Set environment variables in your deployment platform
+2. Configure MongoDB connection string
+3. Deploy using the provided scripts
+
+### Frontend Deployment (Vercel/Netlify)
+1. Set `REACT_APP_API_URL` environment variable to your backend URL
+2. Build the project: `npm run build`
+3. Deploy the build folder to your preferred platform
 
 ## 📝 License
 

@@ -183,26 +183,8 @@ Finalytics/
 └── README.md
 ```
 
-## 🚀 Deployment
-
-### Backend Deployment (Railway/Heroku/Render)
-1. Set environment variables in your deployment platform
-2. Configure MongoDB connection string
-3. Deploy using the provided scripts
-
-### Frontend Deployment (Vercel/Netlify)
-1. Set `REACT_APP_API_URL` environment variable to your backend URL
-2. Build the project: `npm run build`
-3. Deploy the build folder to your preferred platform
-
-## 📝 License
-
-This project is created for educational purposes as part of a full-stack development assignment.
 
 ## 👨‍💻 Author
 
 Pushkar Deore - Full Stack Developer
 
----
-
-**Note**: This is a comprehensive financial analytics application demonstrating full-stack development skills with modern technologies and best practices. 
